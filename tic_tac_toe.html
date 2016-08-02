@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link href='https://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>  <link rel="stylesheet" type="text/css" href="calc_style.css">
+  <script src="calc.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+</head>
+
+<body onload="listen_for_move()" onresize="center()">
+
+<div class="container">
+  <!-- Modal -->
+<div style="text-align:center">
+  <div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog">
+    
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">Welcome To Tic Tac Toe!</h3>
+        </div>
+        <div class="modal-body">
+          <p>Choose your player!&nbsp;&nbsp; 
+          <button type="button" id="x" class="btn btn-default" data-dismiss="modal">X</button>
+          <button type="button" id="o" class="btn btn-default" data-dismiss="modal">O</button>
+          </p>
+
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</div>
+
+</div>
+	
+	<div class="box">
+		<div class="row">
+		  <div class="col" id='0'><span id='text_0'>&nbsp</span></div>
+		  <div class="col" id='1'><span id='text_1'>&nbsp</span></div>
+		  <div class="col" id='2'><span id='text_2'>&nbsp</span></div>
+		</div>
+		<div class="row">
+		  <div class="col" id='3'><span id='text_3'>&nbsp</span></div>
+		  <div class="col" id='4'><span id='text_4'>&nbsp</span></div>
+		  <div class="col" id='5'><span id='text_5'>&nbsp</span></div>
+		</div>
+		<div class="row">
+		  <div class="col" id='6'><span id='text_6'>&nbsp</span></div>
+		  <div class="col" id='7'><span id='text_7'>&nbsp</span></div>
+		  <div class="col" id='8'><span id='text_8'>&nbsp</span></div>
+		</div>
+	</div>
+
+  <script>
+  // fix 
+  function center() {
+	  // centers vertically when window resizes
+	  console.log("centering");
+	  var margin_top = ($(window).height() - 450) / 2;
+	  console.log($(window).height());
+	  $("box").css("margin-top", margin_top + "px !important");
+	}
+
+	var board = ['&nbsp;','&nbsp;','&nbsp;','&nbsp;','&nbsp;','&nbsp;','&nbsp;','&nbsp;','&nbsp;'];
+  var open_slots = [0,1,2,3,4,5,6,7,8];
+  var player_is_x;
+  var winner;
+
+  function reset() {
+  	setTimeout(function() {
+  		open_slots = [0,1,2,3,4,5,6,7,8];
+  		board = ['&nbsp;','&nbsp;','&nbsp;','&nbsp;','&nbsp;','&nbsp;','&nbsp;','&nbsp;','&nbsp;'];
+	  	console.log("resetting...");
+	  	for (var i = 0; i < 9; i++) {
+	  		$("#" + i).css("background-color", "#FF9930");
+	  		$("#text_" + i).html("&nbsp;");
+	  	}
+	  	if (winner.length === 4) {
+		  	$("h3").html("Winner is " + winner[3].toUpperCase() + "!");
+	  	} else {
+		  	$("h3").html("It was a draw!");
+	  	}
+		  $("#myModal").modal({backdrop: "static"});
+	  	winner = undefined;
+  	}, 2000);
+  }
+
+  function end() {
+  	if (winner != "nobody") {
+  		setTimeout(function() {
+	  		$("#" + winner[0]).css("background-color", "gray");
+	  		$("#" + winner[1]).css("background-color", "gray");
+	  		$("#" + winner[2]).css("background-color", "gray");
+  		}, 500);
+	  	console.log("winner is " + winner[3]);
+  	} else {
+	  	console.log("winner is " + winner);
+  	}
+  	reset();
+  }
+
+  function comp_move() {
+  	var index = Math.floor(Math.random() * open_slots.length);
+  	var rand_sq_id = open_slots.splice(index, 1);
+  	AI_execute(rand_sq_id[0]);
+  	winner = checkWin();
+  	if (winner) {
+  		end();
+  	}
+  }
+
+  function AI_execute(num) {
+  	var space = $("#text_"+num);
+  	space.fadeOut(0, function() {
+
+  		if (player_is_x) {
+	      space.html('o');
+	    	board[num] = 'o';		
+  		} else {
+	      space.html('x');
+	    	board[num] = 'x';		
+  		}
+
+    	space.fadeIn('slow');
+    	console.log(open_slots);
+  	});
+  }
+
+  function makeMove(id) {
+  	if (!winner) {
+	  	space = $("#text_" + id);
+			if (space.html() == '&nbsp;') {
+		  	space.fadeOut(0, function() {
+
+		    	if (player_is_x) {
+			    	board[id] = 'x';
+		      	space.html('x');
+		    	} else {
+			    	board[id] = 'o';
+		      	space.html('o');
+		    	}
+
+		    	space.fadeIn('slow');
+
+		    	open_slots.splice(open_slots.indexOf(id), 1);
+
+		    	winner = checkWin();
+
+		    	if (!winner) {
+			    	setTimeout(comp_move, 100);
+	    		} else {
+	    			end();
+	    		}
+		  	});
+			}
+  	}
+  }
+
+  $(document).ready(function() {
+  	$(".col").hover(function() {
+  		var old = $(this).css("background-color");
+			$(this).css("background-color", "red");
+  	}, function() {
+  		$(this).css("background-color", "#FF9930");
+  	});
+  	
+  	center();
+    $("#x").click(function() {
+    	player_is_x = true;
+    });
+    $("#o").click(function() {
+    	player_is_x = false;
+    	comp_move();
+    });
+	  $("#myModal").modal({backdrop: "static"});
+  });
+
+  function listen_for_move() {
+  	var space;
+		space = $("#0");
+	  space.mousedown(function() {
+	  	makeMove(0);
+	  });
+		space = $("#1");
+	  space.mousedown(function() {
+	  	space = $("#text_1");
+	  	makeMove(1);
+	  });
+		space = $("#2");
+	  space.mousedown(function() {
+	  	space = $("#text_2");
+	  	makeMove(2);
+	  });
+		space = $("#3");
+	  space.mousedown(function() {
+	  	makeMove(3);
+	  });
+		space = $("#4");
+	  space.mousedown(function() {
+	  	space = $("#text_4");
+	  	makeMove(4);
+	  });
+		space = $("#5");
+	  space.mousedown(function() {
+	  	space = $("#text_5");
+	  	makeMove(5);
+	  });
+		space = $("#6");
+	  space.mousedown(function() {
+	  	makeMove(6);
+	  });
+		space = $("#7");
+	  space.mousedown(function() {
+	  	makeMove(7);
+	  });
+		space = $("#8");
+	  space.mousedown(function() {
+	  	makeMove(8);
+	  });
+  }
+	</script>
+</body>
+</html>
